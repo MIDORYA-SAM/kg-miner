@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>KG Miner - Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Aviso Educacional Obrigatório -->
+        <div class="alert-banner">
+            ⚠️ SIMULAÇÃO EDUCACIONAL: Não há mineração real de criptomoedas.
+        </div>
+
+        <header>
+            <h1>KG Miner</h1>
+            <div class="status-indicator">
+                <span id="ws-status" class="dot offline"></span>
+                <span id="ws-text">Offline</span>
+            </div>
+        </header>
+
+        <section class="config-panel">
+            <div class="input-group">
+                <label>Moeda Alvo (Demostração)</label>
+                <select id="coin-select">
+                    <option value="BTC">Bitcoin (BTC)</option>
+                    <option value="LTC">Litecoin (LTC)</option>
+                    <option value="DOGE">Dogecoin (DOGE)</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>Carteira (Fake Wallet)</label>
+                <input type="text" placeholder="1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa" readonly>
+            </div>
+            <div class="input-group">
+                <label>Workers Simulados</label>
+                <input type="number" id="workers-input" min="1" max="16" value="4">
+            </div>
+        </section>
+
+        <section class="dashboard">
+            <div class="card stat-card">
+                <h3>Hashrate</h3>
+                <div class="value" id="hashrate-val">0.00 H/s</div>
+            </div>
+            <div class="card stat-card">
+                <h3>Total Hashes</h3>
+                <div class="value" id="total-val">0</div>
+            </div>
+            <div class="card stat-card">
+                <h3>Tempo Ativo</h3>
+                <div class="value" id="time-val">00:00:00</div>
+            </div>
+        </section>
+
+        <section class="controls">
+            <button id="btn-start" class="btn primary">INICIAR</button>
+            <button id="btn-stop" class="btn danger" disabled>PARAR</button>
+            <button id="btn-reset" class="btn secondary">RESET</button>
+        </section>
+
+        <section class="logs">
+            <h3>Atividade Recente</h3>
+            <div class="log-container" id="log-box"></div>
+        </section>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
