@@ -1,18 +1,240 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-PT">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>KG Miner - Dashboard</title>
-    <link rel="stylesheet" href="style.css">
+    <title>KG Miner - Dashboard Pro</title>
+    <!-- Fontes Modernas -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-main: #0B0F19;
+            --bg-card: #151B2B;
+            --text-main: #F1F5F9;
+            --text-muted: #64748B;
+            --accent-green: #10B981;
+            --accent-blue: #3B82F6;
+            --accent-red: #EF4444;
+            --border-color: #232D42;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            font-family: 'Inter', -apple-system, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            padding-bottom: 40px;
+        }
+
+        .app-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .alert-banner {
+            background: rgba(239, 68, 68, 0.1);
+            color: #FCA5A5;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 0.8rem;
+            font-weight: 600;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        header h1 {
+            font-size: 1.8rem;
+            background: linear-gradient(90deg, #3B82F6, #10B981);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--bg-card);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            border: 1px solid var(--border-color);
+        }
+
+        .dot { width: 10px; height: 10px; border-radius: 50%; }
+        .dot.online { background-color: var(--accent-green); box-shadow: 0 0 10px var(--accent-green); }
+        .dot.offline { background-color: var(--accent-red); box-shadow: 0 0 10px var(--accent-red); }
+
+        .card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+
+        .input-group {
+            margin-bottom: 16px;
+        }
+        .input-group:last-child { margin-bottom: 0; }
+        
+        .input-group label {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        input, select {
+            width: 100%;
+            background-color: var(--bg-main);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 14px;
+            border-radius: 10px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        input:focus, select:focus { border-color: var(--accent-blue); }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .dashboard .stat-card:first-child {
+            grid-column: span 2;
+            background: linear-gradient(145deg, #151B2B 0%, #1A233A 100%);
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+
+        .stat-card h3 {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+
+        .stat-card .value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-main);
+        }
+
+        .stat-card:first-child .value {
+            color: var(--accent-green);
+            font-size: 2.2rem;
+            text-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .controls #btn-reset { grid-column: span 2; }
+
+        .btn {
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            color: white;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn:active { transform: scale(0.96); }
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; filter: grayscale(100%); }
+
+        .btn.primary { 
+            background: linear-gradient(135deg, #2563EB, #3B82F6); 
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+        .btn.danger { 
+            background: linear-gradient(135deg, #DC2626, #EF4444);
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+        }
+        .btn.secondary { 
+            background-color: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+        }
+
+        .logs {
+            background-color: #05080F;
+            border: 1px solid var(--border-color);
+            padding: 16px;
+            border-radius: 12px;
+        }
+
+        .logs h3 {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+            text-transform: uppercase;
+        }
+
+        .log-container {
+            height: 150px;
+            overflow-y: auto;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: #94A3B8;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .log-entry {
+            display: flex;
+            gap: 8px;
+            border-bottom: 1px dashed #1E293B;
+            padding-bottom: 6px;
+        }
+        .log-time { color: var(--accent-blue); }
+        .log-text { color: #E2E8F0; }
+    </style>
 </head>
 <body>
     <div class="app-container">
-        <!-- Aviso Educacional Obrigatório -->
         <div class="alert-banner">
-            ⚠️ SIMULAÇÃO EDUCACIONAL: Não há mineração real de criptomoedas.
+            ⚠️ Simulação Educacional de Mineração
         </div>
 
         <header>
@@ -23,32 +245,32 @@
             </div>
         </header>
 
-        <section class="config-panel">
+        <section class="card config-panel">
             <div class="input-group">
-                <label>Moeda Alvo (Demostração)</label>
+                <label>Moeda Alvo (Demo)</label>
                 <select id="coin-select">
-                    <option value="BTC">Bitcoin (BTC)</option>
-                    <option value="LTC">Litecoin (LTC)</option>
-                    <option value="DOGE">Dogecoin (DOGE)</option>
+                    <option value="BTC">Bitcoin (BTC) - SHA256</option>
+                    <option value="LTC">Litecoin (LTC) - Scrypt</option>
+                    <option value="DOGE">Dogecoin (DOGE) - Scrypt</option>
                 </select>
             </div>
             <div class="input-group">
-                <label>Carteira (Fake Wallet)</label>
-                <input type="text" placeholder="1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa" readonly>
+                <label>Endereço da Carteira (Wallet)</label>
+                <input type="text" value="1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa" readonly>
             </div>
             <div class="input-group">
-                <label>Workers Simulados</label>
+                <label>Workers Simulados (Threads)</label>
                 <input type="number" id="workers-input" min="1" max="16" value="4">
             </div>
         </section>
 
         <section class="dashboard">
             <div class="card stat-card">
-                <h3>Hashrate</h3>
+                <h3>Potência (Hashrate)</h3>
                 <div class="value" id="hashrate-val">0.00 H/s</div>
             </div>
             <div class="card stat-card">
-                <h3>Total Hashes</h3>
+                <h3>Hashes Totais</h3>
                 <div class="value" id="total-val">0</div>
             </div>
             <div class="card stat-card">
@@ -58,17 +280,18 @@
         </section>
 
         <section class="controls">
-            <button id="btn-start" class="btn primary">INICIAR</button>
-            <button id="btn-stop" class="btn danger" disabled>PARAR</button>
-            <button id="btn-reset" class="btn secondary">RESET</button>
+            <button id="btn-start" class="btn primary">Iniciar</button>
+            <button id="btn-stop" class="btn danger" disabled>Parar</button>
+            <button id="btn-reset" class="btn secondary">Limpar Dados</button>
         </section>
 
         <section class="logs">
-            <h3>Atividade Recente</h3>
+            <h3>Terminal de Atividade</h3>
             <div class="log-container" id="log-box"></div>
         </section>
     </div>
 
+    <!-- O Script continua a ser carregado do ficheiro JS externo -->
     <script src="script.js"></script>
 </body>
 </html>
