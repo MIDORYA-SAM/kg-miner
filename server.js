@@ -8,12 +8,14 @@ const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
-// Servir arquivos estáticos da pasta public
-app.use(express.static(path.join(__dirname, 'public')));
+const publicPath = path.join(__dirname, 'public');
 
-// Rota explícita para garantir o carregamento do index.html
+// Servir ficheiros estáticos da pasta public
+app.use(express.static(publicPath));
+
+// Rota principal para carregar o index.html
 app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    res.sendFile(path.join(publicPath, 'index.html'));
 });
 
 // Estado da Simulação Educacional
@@ -26,7 +28,6 @@ let miningInterval = null;
 
 wss.on('connection', (ws) => {
     console.log('Novo cliente conectado.');
-    
     sendStats(ws);
 
     ws.on('message', (message) => {
