@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>KG Miner - Dashboard Pro v2</title>
+    <title>KG Miner - Dashboard Pro v2.5</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     
     <style>
@@ -17,7 +17,7 @@
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { background-color: var(--bg-main); color: var(--text-main); font-family: 'Inter', sans-serif; padding-bottom: 40px; }
         .app-container { max-width: 600px; margin: 0 auto; padding: 20px; display: flex; flex-direction: column; gap: 20px; }
-        .alert-banner { background: rgba(239, 68, 68, 0.1); color: #FCA5A5; padding: 10px; border-radius: 8px; text-align: center; font-size: 0.75rem; font-weight: bold; border: 1px solid rgba(239,68,68,0.2); }
+        .alert-banner { background: rgba(59, 130, 246, 0.1); color: #93C5FD; padding: 10px; border-radius: 8px; text-align: center; font-size: 0.75rem; font-weight: bold; border: 1px solid rgba(59,130,246,0.2); }
         header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 12px; border-bottom: 1px solid var(--border-color); }
         header h1 { font-size: 1.6rem; background: linear-gradient(90deg, #3B82F6, #10B981); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 700; }
         .status-indicator { display: flex; align-items: center; gap: 8px; background: var(--bg-card); padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; border: 1px solid var(--border-color); }
@@ -25,24 +25,28 @@
         .dot.online { background-color: var(--accent-green); box-shadow: 0 0 10px var(--accent-green); }
         .dot.offline { background-color: var(--accent-red); box-shadow: 0 0 10px var(--accent-red); }
         
-        .card { background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); }
+        .card { background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); transition: border-color 0.3s; }
         .input-group { margin-bottom: 12px; }
         .input-group:last-child { margin-bottom: 0; }
         .input-group label { display: block; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; font-weight: 600; }
         input, select { width: 100%; background-color: #070A11; border: 1px solid var(--border-color); color: var(--text-main); padding: 12px; border-radius: 8px; font-size: 0.95rem; outline: none; font-family: 'JetBrains Mono', monospace; }
-        input:focus, select:focus { border-color: var(--accent-blue); }
         
         .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .stat-card { text-align: center; padding: 12px; }
         .stat-card h3 { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px; }
-        .stat-card .value { font-size: 1.4rem; font-weight: 700; font-family: 'JetBrains Mono', monospace; color: var(--text-main); }
+        .stat-card .value { font-size: 1.4rem; font-weight: 700; font-family: 'JetBrains Mono', monospace; color: var(--text-main); transition: color 0.3s; }
         
         .card-full { grid-column: span 2; }
         .highlight-hash { background: linear-gradient(145deg, #151B2B, #1A233A); border-color: rgba(59,130,246,0.3); }
-        .highlight-hash .value { color: var(--accent-green); font-size: 1.8rem; text-shadow: 0 0 15px rgba(16,185,129,0.3); }
+        .highlight-hash .value { color: var(--accent-green); font-size: 1.8rem; }
         
         .highlight-gold { border-color: rgba(245,158,11,0.3); background: rgba(245,158,11,0.05); }
-        .highlight-gold .value { color: var(--accent-gold); font-size: 1.8rem; text-shadow: 0 0 15px rgba(245,158,11,0.3); }
+        .highlight-gold .value { color: var(--accent-gold); font-size: 1.8rem; }
+        .usd-value { font-size: 0.85rem; color: var(--text-muted); margin-top: 4px; font-weight: 600; }
+
+        .highlight-price { background: #070A11; }
+        .highlight-price .value { font-size: 1.8rem; }
+        .market-live { font-size: 0.6rem; color: #10B981; display: inline-block; padding: 2px 6px; border: 1px solid #10B981; border-radius: 4px; margin-left: 8px; vertical-align: middle; }
         
         .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .controls #btn-reset { grid-column: span 2; }
@@ -63,15 +67,21 @@
 </head>
 <body>
     <div class="app-container">
-        <div class="alert-banner">⚠️ Simulação Educacional v2.0</div>
+        <div class="alert-banner">📡 Conectado ao Mercado Real (Binance API)</div>
 
         <header>
             <h1>KG Miner</h1>
             <div class="status-indicator">
                 <span id="ws-status" class="dot offline"></span>
-                <span id="ws-text">Offline</span>
+                <span id="ws-text">Servidor Offline</span>
             </div>
         </header>
+
+        <!-- NOVO CARTÃO: PREÇO REAL DO BITCOIN -->
+        <section class="card stat-card card-full highlight-price" id="price-card">
+            <h3>Preço Atual BTC/USDT <span class="market-live">LIVE</span></h3>
+            <div class="value" id="btc-price-val">A carregar...</div>
+        </section>
 
         <section class="card">
             <div class="input-group">
@@ -94,8 +104,9 @@
             </div>
             
             <div class="card stat-card card-full highlight-gold">
-                <h3>Saldo Simulado (BTC)</h3>
-                <div class="value" id="balance-val">0.00000000</div>
+                <h3>Saldo Simulado</h3>
+                <div class="value" id="balance-val">0.00000000 BTC</div>
+                <div class="usd-value">≈ <span id="balance-usd-val">$0.00</span> USD</div>
             </div>
 
             <div class="card stat-card">
