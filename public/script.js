@@ -1,0 +1,152 @@
+// Referências do DOM
+const wsStatusDot = document.getElementById('ws-status');
+const wsStatusText = document.getElementById('ws-text');
+const hashrateVal = document.getElementById('hashrate-val');
+const totalVal = document.getElementById('total-val');
+const timeVal = document.getElementById('time-val');
+const logBox = document.getElementById('log-box');
+const workersInput = document.getElementById('workers-input');
+
+const btnStart = document.getElementById('btn-start');
+const btnStop = document.getElementById('btn-stop');
+const btnReset = document.getElementById('btn-reset');
+
+let ws;
+let reconnectInterval;
+
+function connectWebSocket() {
+    // Detecta dinamicamente a URL baseada no ambiente atual
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsUrl = `${protocol}//${window.location.host}`;
+    
+    ws = new WebSocket(wsUrl);
+
+    ws.onopen = () => {
+        updateWsStatus(true);
+        addLog('Conectado ao servidor.');
+        if (reconnectInterval) {
+            clearInterval(reconnectInterval);
+            reconnectInterval = null;
+        }
+    };
+
+    ws.onmessage = (event) => {
+        try {
+            const data = JSON.parse(event.data);
+            if (data.type === 'STATS') {
+                updateDashboard(data);
+            } else if (data.type === 'LOG') {
+                addLog(data.message);
+            }
+        } catch (err) {
+            console.error('Erro no parser da mensagem:', err);
+        }
+    };
+
+    ws.onclose = () => {
+        updateWsStatus(false);
+        addLog('Conexão perdida. Tentando reconectar...');
+        btnStart.disabled = true;
+        btnStop.disabled = true;
+        
+        // Reconexão automática a cada 3 segundos
+        if (!reconnectInterval) {
+            reconnectInterval = setInterval(connectWebSocket, 3000);
+        }
+    };
+
+    ws.onerror = (error) => {
+        console.error('WebSocket erro:', error);
+        ws.close();
+    };
+}
+
+function updateWsStatus(isOnline) {
+    if (isOnline) {
+        wsStatusDot.className = 'dot online';
+        wsStatusText.textContent = 'Online';
+        btnStart.disabled = false;
+        btnReset.disabled = false;
+    } else {
+        wsStatusDot.className = 'dot offline';
+        wsStatusText.textContent = 'Offline';
+    }
+}
+
+function updateDashboard(stats) {
+    // UI dos botões dependendo do estado
+    btnStart.disabled = stats.isMining;
+    btnStop.disabled = !stats.isMining;
+
+    // Formatar Hashrate
+    hashrateVal.textContent = formatHashrate(stats.hashrate);
+    totalVal.textContent = stats.totalHashes.toLocaleString();
+    timeVal.textContent = formatTime(stats.uptime);
+    workersInput.value = stats.workers;
+}
+
+// Funções de formatação
+function formatHashrate(hashes) {
+    if (hashes === 0) return '0.00 H/s';
+    if (hashes < 1000) return `${hashes} H/s`;
+    if (hashes < 1000000) return `${(hashes / 1000).toFixed(2)} kH/s`;
+    if (hashes < 1000000000) return `${(hashes / 1000000).toFixed(2)} MH/s`;
+    return `${(hashes / 1000000000).toFixed(2)} GH/s`;
+}
+
+function formatTime(seconds) {
+    const h = String(Math.floor(seconds / 3600)).padStart(2, '0');
+    const m = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0');
+    const s = String(seconds % 60).padStart(2, '0');
+    return `${h}:${m}:${s}`;
+}
+
+function addLog(msg) {
+    const entry = document.createElement('div');
+    entry.className = 'log-entry';
+    
+    const time = document.createElement('span');
+    time.className = 'log-time';
+    const now = new Date();
+    time.textContent = `[${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}]`;
+    
+    const text = document.createElement('span');
+    text.textContent = msg;
+    
+    entry.appendChild(time);
+    entry.appendChild(text);
+    
+    logBox.insertBefore(entry, logBox.firstChild);
+    
+    if (logBox.children.length > 30) {
+        logBox.removeChild(logBox.lastChild);
+    }
+}
+
+// Event Listeners dos botões
+btnStart.addEventListener('click', () => {
+    if (ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ action: 'START' }));
+    }
+});
+
+btnStop.addEventListener('click', () => {
+    if (ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ action: 'STOP' }));
+    }
+});
+
+btnReset.addEventListener('click', () => {
+    if (ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ action: 'RESET' }));
+    }
+});
+
+workersInput.addEventListener('change', (e) => {
+    if (ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ action: 'SET_WORKERS', workers: e.target.value }));
+    }
+});
+
+// Inicialização
+connectWebSocket();
