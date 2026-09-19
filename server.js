@@ -11,6 +11,11 @@ const wss = new WebSocket.Server({ server });
 // Servir arquivos estáticos da pasta public
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Rota explícita para garantir o carregamento do index.html
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
 // Estado da Simulação Educacional
 let isMining = false;
 let totalHashes = 0;
@@ -22,7 +27,6 @@ let miningInterval = null;
 wss.on('connection', (ws) => {
     console.log('Novo cliente conectado.');
     
-    // Envia o estado atual assim que conecta
     sendStats(ws);
 
     ws.on('message', (message) => {
@@ -73,11 +77,8 @@ function startSimulation() {
         if (!isMining) return;
         
         let hashesThisTick = 0;
-        // Simulação super leve: calcula apenas alguns hashes reais para demonstrar, 
-        // e multiplica matematicamente para simular um hashrate sem gastar CPU de verdade.
         for (let i = 0; i < simulatedWorkers; i++) {
             crypto.createHash('sha256').update(Math.random().toString()).digest('hex');
-            // Simulando ~500 kH/s por worker no frontend
             hashesThisTick += Math.floor(Math.random() * 100000) + 450000; 
         }
         
@@ -125,7 +126,6 @@ function broadcast(data) {
     });
 }
 
-// Configuração da Porta (Render utiliza variável de ambiente PORT)
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, '0.0.0.0', () => {
     console.log(`Servidor KG Miner rodando na porta ${PORT}`);
